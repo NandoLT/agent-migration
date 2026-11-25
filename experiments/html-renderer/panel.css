@@ -1,0 +1,61 @@
+:root {
+  color-scheme: light;
+  color: var(--orca-foreground);
+  background: var(--orca-background);
+  font: 14px/1.4 var(--orca-font-sans, system-ui), system-ui, sans-serif;
+}
+
+:root.dark { color-scheme: dark; }
+* { box-sizing: border-box; }
+body, h1, h2, p { margin: 0; }
+#root { container: migration / inline-size; }
+.shell { display: flex; flex-direction: column; height: 100dvh; }
+main { flex: 1; min-height: 0; overflow: auto; padding: 12px; }
+header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+h1 { font-size: 18px; }
+h2 { font-size: 14px; margin-bottom: 8px; }
+p, small { color: var(--orca-muted-foreground); }
+.route, .workspace { display: grid; gap: 8px; min-width: 0; }
+.route { margin-bottom: 8px; }
+section {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 8px 12px;
+  border: 1px solid var(--orca-border);
+  border-radius: 8px;
+  background: var(--orca-card);
+  color: var(--orca-card-foreground);
+}
+.route section { display: grid; }
+label { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+label:has(input:disabled) { color: var(--orca-muted-foreground); }
+input { accent-color: var(--orca-primary); }
+:focus-visible { outline: 2px solid var(--orca-ring); outline-offset: 3px; }
+.layout-name::after { content: "Compact"; }
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--orca-border);
+  background: var(--orca-card);
+}
+button {
+  border: 1px solid var(--orca-border);
+  border-radius: 6px;
+  background: var(--orca-muted);
+  color: var(--orca-muted-foreground);
+  font: inherit;
+  padding: 6px 10px;
+}
+
+@container migration (min-width: 420px) {
+  .route { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .layout-name::after { content: "Single column"; }
+}
+@container migration (min-width: 760px) {
+  .workspace { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .layout-name::after { content: "Dashboard"; }
+}

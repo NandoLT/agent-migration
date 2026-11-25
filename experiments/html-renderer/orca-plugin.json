@@ -1,0 +1,15 @@
+{
+  "manifestVersion": 2,
+  "id": "agent-migration-html-poc",
+  "name": "Agent Migration HTML PoC",
+  "version": "0.0.1",
+  "description": "Isolated HTML renderer experiment with synthetic data only.",
+  "engines": { "orca": ">=1.4.246" },
+  "execution": "sandboxed-ui",
+  "capabilities": [],
+  "contributes": {
+    "panels": [
+      { "id": "renderer", "title": "Migration HTML PoC", "icon": "code", "entry": "index.html", "ui": "html" }
+    ]
+  }
+}

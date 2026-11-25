@@ -2,3 +2,5 @@
 /AGENT_MIGRATION_SPEC.md
 /.orca/
 /plugin/.orca/
+/node_modules/
+/plugin/ui/app.js

@@ -16,8 +16,8 @@
       {
         "id": "environment",
         "title": "Agent Migration",
-        "entry": "src/ui/panel.tsx",
-        "ui": "components"
+        "entry": "ui/index.html",
+        "ui": "html"
       }
     ]
   }

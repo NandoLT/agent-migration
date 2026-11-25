@@ -1,0 +1,12 @@
+{
+  "name": "agent-migration",
+  "private": true,
+  "scripts": {
+    "build:ui": "esbuild plugin/src/ui/panel.tsx --bundle --jsx=automatic --minify --legal-comments=eof --outfile=plugin/ui/app.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}
