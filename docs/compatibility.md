@@ -1,6 +1,6 @@
 # Compatibilidad inicial — Agent Migration
 
-**Alcance:** primera entrega de la sección 13 de `AGENT_MIGRATION_SPEC.md`. Inspección local y contraste con fuentes oficiales; sin implementar ni ejecutar el experimento.
+**Alcance:** primera entrega de la [sección 13 de la especificación](specification.md#13-referencias-y-comprobaciones-iniciales-pendientes). Inspección local y contraste con fuentes oficiales; sin implementar ni ejecutar el experimento.
 
 ## Entorno comprobado
 
