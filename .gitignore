@@ -1,2 +1,4 @@
 # Especificación de trabajo: contiene detalles de una migración real.
 /AGENT_MIGRATION_SPEC.md
+/.orca/
+/plugin/.orca/

@@ -1,0 +1,24 @@
+{
+  "manifestVersion": 2,
+  "id": "agent-migration",
+  "name": "Agent Migration",
+  "version": "0.0.1",
+  "description": "Local compatibility probe. Reads a synthetic fixture and checks the OpenCode CLI version; does not import sessions.",
+  "engines": {
+    "orca": ">=1.4.246"
+  },
+  "pluginApi": 1,
+  "execution": "trusted-worker",
+  "capabilities": [],
+  "main": "src/worker/main.ts",
+  "contributes": {
+    "panels": [
+      {
+        "id": "environment",
+        "title": "Agent Migration",
+        "entry": "src/ui/panel.tsx",
+        "ui": "components"
+      }
+    ]
+  }
+}

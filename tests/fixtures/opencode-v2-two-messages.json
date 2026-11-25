@@ -1,0 +1,31 @@
+{
+  "info": {
+    "id": "ses_0123456789abcdef0123456789",
+    "projectID": "synthetic-import-source",
+    "title": "[Codex] Prueba sintética",
+    "cost": 0,
+    "tokens": { "input": 0, "output": 0, "reasoning": 0, "cache": { "read": 0, "write": 0 } },
+    "time": { "created": 1795292947724, "updated": 1795292949000 },
+    "location": { "directory": "/synthetic/source" }
+  },
+  "messages": [
+    {
+      "id": "msg_0123456789abcdef0123456789",
+      "type": "user",
+      "time": { "created": 1795292947724 },
+      "text": "¿Hola, mundo?\nSegunda línea.",
+      "files": []
+    },
+    {
+      "id": "msg_abcdef0123456789abcdef0123",
+      "type": "assistant",
+      "time": { "created": 1795292949000, "completed": 1795292949000 },
+      "agent": "build",
+      "model": { "id": "gpt-6.2-sol", "providerID": "openai" },
+      "content": [{ "type": "text", "text": "Sí: «prueba local».\n\n```text\nα + β\n```" }],
+      "finish": "stop",
+      "cost": 0,
+      "tokens": { "input": 0, "output": 0, "reasoning": 0, "cache": { "read": 0, "write": 0 } }
+    }
+  ]
+}
