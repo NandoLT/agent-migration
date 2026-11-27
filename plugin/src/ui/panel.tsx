@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { scanRequest, type ScanResult } from '../protocol'
 import { projects, type ThreadStatus } from './demo-data'
+import { ScanResults } from './scan-results'
 import { emptySelection, mapDestination, preview, projectView, selectThreads } from './selection'
 
 type IconName = 'transfer' | 'code' | 'terminal' | 'chevron' | 'folder' | 'refresh' | 'sliders' | 'preview' | 'download'
@@ -145,11 +147,40 @@ function Options() {
 function Panel() {
   const [selection, setSelection] = useState(emptySelection)
   const [groups, setGroups] = useState<readonly string[]>([])
-  const [scanCount, setScanCount] = useState(0)
+  const [demo, setDemo] = useState(false)
+  const [sourceRoot, setSourceRoot] = useState('')
+  const [scanning, setScanning] = useState(false)
+  const [scanned, setScanned] = useState<ScanResult | null>(null)
+  const [scanError, setScanError] = useState('')
   const [showDetails, setShowDetails] = useState(false)
   const totals = preview(selection)
-  const expanded = showDetails && totals.conversations > 0
+  const expanded = demo && showDetails && totals.conversations > 0
   const previewRef = useRef<HTMLElement>(null)
+
+  async function scan() {
+    const host = (window as Window & { orca?: {
+      plugin: { request(name: typeof scanRequest, data: { root?: string }, options: { timeoutMs: number }): Promise<ScanResult> }
+    } }).orca
+    setDemo(false)
+    setScanned(null)
+    setScanError('')
+    setScanning(true)
+    try {
+      if (!host) {
+        setScanError('Codex scanning is available inside Orca.')
+        return
+      }
+      const result = await host.plugin.request(scanRequest, sourceRoot ? { root: sourceRoot } : {}, { timeoutMs: 120000 })
+      if (result.status === 'ok') setScanned(result)
+      else setScanError(result.status === 'invalid-root'
+        ? 'Enter an absolute path to the Codex data folder, or leave it blank to use the default.'
+        : 'Could not open the Codex data folder. Check the location and permissions.')
+    } catch {
+      setScanError('The scan did not finish. Try again or choose a smaller Codex data folder.')
+    } finally {
+      setScanning(false)
+    }
+  }
 
   useEffect(() => {
     if (expanded) previewRef.current?.focus({ preventScroll: true })
@@ -167,10 +198,10 @@ function Panel() {
             <h1>Agent Migration</h1>
             <p>Move conversations between agents.</p>
           </div>
-          <span className="demo-chip">Demo data</span>
+          {demo && <span className="demo-chip">Demo data</span>}
           <button type="button" className="scan" aria-label="Scan Codex sessions"
-            onClick={() => setScanCount((value) => value + 1)}>
-            <Icon name="refresh" /><span>Scan</span>
+            disabled={scanning} onClick={scan}>
+            <Icon name="refresh" /><span>{scanning ? 'Scanning…' : 'Scan'}</span>
           </button>
         </header>
 
@@ -179,15 +210,23 @@ function Panel() {
           <span className="route-arrow"><Icon name="transfer" /></span>
           <Route title="Destination" icon="terminal" options={targets} />
         </div>
-        <p className="visually-hidden" role="status">
-          {scanCount > 0 ? `Demo scan ${scanCount} complete. No local files were read.` : ''}
-        </p>
+        <details className="surface scan-settings">
+          <summary>Scan location</summary>
+          <label>Codex data folder
+            <input type="text" value={sourceRoot} placeholder="Default: ~/.codex" disabled={scanning}
+              onChange={(event) => setSourceRoot(event.currentTarget.value)} />
+          </label>
+          <p className="quiet">Use an absolute path for a custom location. Only the session folders and title index are scanned.</p>
+        </details>
 
         <div className="workspace">
           <section className="surface imports">
             <SectionHeading>Available imports</SectionHeading>
-            <p className="quiet">Verified imports are locked for the selected destination.</p>
-            <div className="project-list">
+            {scanning && <p className="quiet" role="status">Reading active and archived Codex sessions…</p>}
+            {scanError && <p className="scan-notice" role="alert">{scanError}</p>}
+            {!scanning && !demo && !scanned && !scanError && <p className="quiet">Scan Codex to list your conversations. This only reads the source.</p>}
+            {!demo && scanned?.status === 'ok' && <ScanResults result={scanned} />}
+            {demo && <><p className="quiet">Verified imports are locked for the selected destination.</p><div className="project-list">
               {projects.map((project) => (
                 <ProjectGroup key={project.id} view={projectView(selection, project)}
                   expanded={groups.includes(project.id)}
@@ -199,12 +238,14 @@ function Panel() {
                     setShowDetails(false)
                   }} />
               ))}
-            </div>
+            </div></>}
+            <button type="button" className="demo-toggle" disabled={scanning}
+              onClick={() => setDemo(!demo)}>{demo ? 'Hide demo' : 'Show demo'}</button>
           </section>
           <Options />
         </div>
 
-        <section className="surface migration-preview" id="migration-preview" ref={previewRef} tabIndex={-1}>
+        {demo && <section className="surface migration-preview" id="migration-preview" ref={previewRef} tabIndex={-1}>
           <SectionHeading icon="preview">Migration preview</SectionHeading>
           {totals.chosen.length === 0 ? <p className="quiet">Select conversations to preview the migration.</p> : (
             <div className="preview-grid">
@@ -217,20 +258,20 @@ function Panel() {
               ))}
             </div>
           )}
-        </section>
+        </section>}
       </main>
       <footer className="footer">
-        <p className="totals" aria-live="polite">{totalsText}</p>
+        <p className="totals" aria-live="polite">{demo ? totalsText : 'Read-only inventory · Destination not checked'}</p>
         <div className="actions">
-          <button type="button" className="secondary-button" disabled={!totals.conversations}
-            aria-controls="migration-preview" aria-expanded={expanded} onClick={() => setShowDetails(!expanded)}>
-            {expanded ? 'Hide details' : 'Preview only'}
+          <button type="button" className="secondary-button" disabled={!demo || !totals.conversations}
+            aria-controls={demo ? 'migration-preview' : undefined} aria-expanded={expanded} onClick={() => setShowDetails(!expanded)}>
+            {demo && expanded ? 'Hide details' : 'Preview only'}
           </button>
           <button type="button" className="primary-button" disabled aria-describedby="demo-limit">
             <Icon name="download" />Import selected projects
           </button>
         </div>
-        <p className="visually-hidden" id="demo-limit">Import is unavailable in this design preview.</p>
+        <p className="visually-hidden" id="demo-limit">Import is unavailable in this version.</p>
       </footer>
     </div>
   )

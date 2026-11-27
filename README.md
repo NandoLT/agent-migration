@@ -4,7 +4,7 @@
 
 Proyecto para importar conversaciones locales de OpenAI Codex a OpenCode 2 desde Orca, preservando los originales y verificando lo importado.
 
-**Estado:** prototipo de interfaz con datos ficticios. No lee ni importa sesiones.
+**Estado:** inventario de Codex de solo lectura en Linux. Todavía no importa sesiones ni comprueba duplicados en OpenCode.
 
 - [Especificación pública](docs/specification.md): requisitos, arquitectura propuesta y referencia de la migración manual con nombres y rutas anonimizados.
 - [Nota de compatibilidad](docs/compatibility.md): resultados en Orca 1.4.273 y OpenCode 2.4.1 y límites de permisos.
@@ -19,9 +19,13 @@ npm ci --ignore-scripts
 npm run build:ui
 ```
 
-Añade **solo `plugin/`** como carpeta de desarrollo en **Settings → Plugins**, revisa y aprueba `trusted-worker` explícitamente, y abre **Agent Migration**. El worker sigue disponible para la prueba de compatibilidad, pero la maqueta HTML no lo llama. Aunque no pide capacidades adicionales a la API de Orca, el perfil `trusted-worker` ejecuta código con los permisos de la cuenta.
+Añade **solo `plugin/`** como carpeta de desarrollo en **Settings → Plugins**, revisa y aprueba `trusted-worker` explícitamente, y abre **Agent Migration**. Aunque no pide capacidades adicionales a la API de Orca, el perfil `trusted-worker` ejecuta código con los permisos de la cuenta.
 
-El panel abre con datos ficticios; **Scan** simula un escaneo sin leer archivos. En **Aurora**, el hilo de diseño está bloqueado para `aurora-app`; puedes cambiar a `aurora-lab` para observar el estado alternativo. **Faro** permite probar la selección múltiple y **Atlas** muestra un conflicto y una posible coincidencia sin verificar. **Preview only** detalla lo elegido. **Import selected projects** siempre está deshabilitado.
+**Scan** lee `sessions/`, `archived_sessions/` y el índice de títulos `session_index.jsonl` de Codex. Usa `CODEX_HOME` si llega al worker o `~/.codex` por defecto. Si Orca no hereda ese override, indica la ruta absoluta en **Scan location**. La lectura no sigue enlaces simbólicos dentro del árbol. El panel recibe títulos, fechas, rutas de origen y recuentos, sin transcripciones. Las rutas de origen no se usan como destinos.
+
+Los resultados reales se agrupan por directorio de origen y muestran el tipo de sesión, los fragmentos archivados y las incidencias de lectura. El límite es de 250 hilos mostrados, 12.000 entradas de directorio, 2 GiB leídos, 200.000 IDs de mensaje y 12 niveles de carpetas. Las líneas que superan 1 MiB se omiten y el hilo se marca como incompleto. La asignación de destino y el estado **Already imported** todavía no se calculan para resultados reales.
+
+**Show demo** mantiene disponible la maqueta ficticia de Aurora, Faro y Atlas para probar selección, asignación y vista previa. **Import selected projects** sigue deshabilitado en ambos modos.
 
 ## Validación local
 

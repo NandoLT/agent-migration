@@ -11,7 +11,10 @@ async function browserTest() {
   const step = () => new Promise((resolve) => setTimeout(resolve, 20))
   const expect = (condition, message) => { if (!condition) throw new Error(message) }
   const root = find('#root')
-  for (let attempt = 0; !find('.project') && attempt < 30; attempt++) await step()
+  for (let attempt = 0; !find('.demo-toggle') && attempt < 30; attempt++) await step()
+  expect(!find('.project'), 'must not display demo projects without opting in')
+  find('.demo-toggle').click()
+  await step()
   expect(Boolean(find('.project')), 'React did not mount')
 
   const routeControls = [...document.querySelectorAll('.route select')]
@@ -62,6 +65,32 @@ async function browserTest() {
   routeControls[0].focus()
   expect(document.activeElement === routeControls[0] && getComputedStyle(routeControls[0]).outlineStyle === 'solid',
     'focused selector needs a visible outline')
+
+  let requests = 0
+  window.orca = { plugin: { request: async (name, params) => {
+    expect(name === 'codex.scan' && params.root === '/synthetic/codex', 'wrong scan request or root')
+    if (++requests === 1) return { status: 'root-unavailable' }
+    return {
+      status: 'ok', totalThreads: 1, files: 2, skippedEntries: 0, malformedFiles: 0, indexIssues: 0, truncated: false,
+      threads: [{
+        id: 'thread-a', projectKey: 'project-a', directory: '/synthetic/project', title: 'Synthetic thread',
+        kind: 'main', updatedAt: '2026-11-24T00:00:00Z', messages: 3, fragments: 2, archivedFragments: 1
+      }]
+    }
+  } } }
+  find('.scan-settings').open = true
+  const input = find('.scan-settings input')
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, '/synthetic/codex')
+  input.dispatchEvent(new Event('input', { bubbles: true }))
+  await step()
+  find('.scan').click()
+  await step()
+  expect(find('[role="alert"]')?.textContent.includes('Could not open'), 'scan errors must be visible')
+  find('.scan').click()
+  await step()
+  expect(find('.scan-project summary')?.textContent.includes('/synthetic/project'), 'missing project in scan results')
+  expect(find('.scan-thread')?.textContent.includes('Synthetic thread'), 'missing thread in scan results')
+  expect(!find('.demo-chip') && find('.primary-button').disabled && !find('.scan-project input'), 'scan must remain read-only')
 }
 
 const work = mkdtempSync(join(process.env.TMPDIR || tmpdir(), 'agent-migration-html-test-'))
